@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Details - SplitEase</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #2196F3;
+            --dark-color: #333;
+            --light-color: #f4f4f4;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+        }
+
+        .navbar-brand {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color) !important;
+        }
+
+        .nav-link {
+            color: #4a4a4a !important;
+            font-weight: 500;
+        }
+        .nav-link.active {
+            color: #67B766 !important;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: white;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .member-item {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .member-info {
+            flex-grow: 1;
+        }
+
+        .expense-item {
+            border-bottom: 1px solid #dee2e6;
+            padding: 10px 0;
+        }
+
+        .expense-item:last-child {
+            border-bottom: none;
+        }
+
+        .expense-amount {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .expense-date {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">SplitEase</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="create-group.html">Create Group</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="add-expense.html">Add Expense</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="expense-summary.html">Summary</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge bg-danger rounded-pill" id="notificationCount" style="display: none;">0</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" id="notificationsList" style="width: 300px; max-height: 400px; overflow-y: auto;">
+                            <li><p class="dropdown-item text-muted">No new notifications</p></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle"></i> <span id="userName">User</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="profile.html">Profile</a></li>
+                            <li><a class="dropdown-item" href="settlement-history.html">Settlement History</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="handleLogout()">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Group Details -->
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-8">
+                <!-- Group Info -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h2 id="groupName" class="mb-0">Loading group...</h2>
+                            <div class="btn-group" id="groupActions" style="display: none;">
+                                <button class="btn btn-primary" onclick="window.location.href='add-expense.html'">
+                                    <i class="fas fa-plus me-2"></i>Add Expense
+                                </button>
+                                <button class="btn btn-outline-primary" onclick="editGroup()" id="editGroupBtn">
+                                    <i class="fas fa-edit me-2"></i>Edit Group
+                                </button>
+                                <button class="btn btn-outline-danger" onclick="deleteGroup()" id="deleteGroupBtn">
+                                    <i class="fas fa-trash me-2"></i>Delete Group
+                                </button>
+                            </div>
+                        </div>
+                        <p id="groupDescription" class="text-muted">Loading description...</p>
+                        <div class="mt-3">
+                            <small class="text-muted">Created by: <span id="creatorName">Loading...</span></small>
+                            <br>
+                            <small class="text-muted">Created on: <span id="createdDate">Loading...</span></small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Group Members -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="mb-0">Group Members</h4>
+                            <button class="btn btn-outline-primary btn-sm" id="addMemberBtn" style="display: none;" onclick="showAddMemberModal()">
+                                <i class="fas fa-user-plus me-1"></i>Add Member
+                            </button>
+                        </div>
+                        <div id="membersList">
+                            <!-- Members will be listed here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Expenses -->
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="mb-3">Recent Expenses</h4>
+                        <div id="expensesList">
+                            <!-- Expenses will be listed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Card -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="mb-3">Group Summary</h4>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Expenses:</span>
+                            <span id="totalExpenses" class="fw-bold">₹0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Your Share:</span>
+                            <span id="yourShare" class="fw-bold">₹0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Your Balance:</span>
+                            <span id="yourBalance" class="fw-bold text-success">₹0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Group Modal -->
+    <div class="modal fade" id="editGroupModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Group</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editGroupForm">
+                        <div class="mb-3">
+                            <label class="form-label">Group Name</label>
+                            <input type="text" class="form-control" id="editGroupName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="editGroupDescription" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveGroupChanges()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Member Modal -->
+    <div class="modal fade" id="addMemberModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Member</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Member's Email</label>
+                        <input type="email" class="form-control" id="newMemberEmail" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="addNewMember()">Add Member</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentUser = null;
+        let groupId = null;
+        let isCreator = false;
+        let editModal = null;
+        let addMemberModal = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Update user name in navbar
+            document.getElementById('userName').textContent = currentUser.name;
+
+            // Load notifications
+            loadNotifications();
+
+            // Get group ID from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            groupId = urlParams.get('id');
+            
+            if (!groupId) {
+                alert('No group specified');
+                window.location.href = 'expense-summary.html';
+                return;
+            }
+
+            editModal = new bootstrap.Modal(document.getElementById('editGroupModal'));
+            addMemberModal = new bootstrap.Modal(document.getElementById('addMemberModal'));
+
+            loadGroupDetails();
+        });
+
+        async function loadNotifications() {
+            try {
+                const response = await fetch(`http://localhost:3000/api/notifications/${currentUser.id}`);
+                if (!response.ok) {
+                    throw new Error('Failed to load notifications');
+                }
+                
+                const notifications = await response.json();
+                const notificationCount = document.getElementById('notificationCount');
+                const notificationsList = document.getElementById('notificationsList');
+                
+                // Count unread notifications
+                const unreadCount = notifications.filter(n => !n.is_read).length;
+                
+                // Update notification count badge
+                if (unreadCount > 0) {
+                    notificationCount.textContent = unreadCount;
+                    notificationCount.style.display = 'inline';
+                } else {
+                    notificationCount.style.display = 'none';
+                }
+                
+                // Update notifications list
+                if (notifications && notifications.length > 0) {
+                    notificationsList.innerHTML = notifications.map(notification => `
+                        <li>
+                            <a class="dropdown-item ${notification.is_read ? 'text-muted' : 'fw-bold'}" 
+                               href="#" 
+                               onclick="handleNotificationClick(${notification.id}, ${notification.group_id})">
+                                ${notification.message}
+                                <br>
+                                <small class="text-muted">${new Date(notification.created_at).toLocaleString()}</small>
+                            </a>
+                        </li>
+                    `).join('');
+                } else {
+                    notificationsList.innerHTML = '<li><p class="dropdown-item text-muted">No new notifications</p></li>';
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+                document.getElementById('notificationsList').innerHTML = 
+                    '<li><p class="dropdown-item text-danger">Failed to load notifications</p></li>';
+            }
+        }
+
+        async function handleNotificationClick(notificationId, groupId) {
+            try {
+                // Mark notification as read
+                const response = await fetch(`http://localhost:3000/api/notifications/${notificationId}`, {
+                    method: 'PUT'
+                });
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.error);
+                }
+
+                // Reload notifications
+                loadNotifications();
+
+                // If notification is about a group, navigate to that group
+                if (groupId) {
+                    window.location.href = `group-details.html?id=${groupId}`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadGroupDetails() {
+            try {
+                const response = await fetch(`http://localhost:3000/api/groups/${groupId}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load group details');
+                }
+
+                // Update group info
+                document.getElementById('groupName').textContent = data.name;
+                document.getElementById('groupDescription').textContent = data.description || 'No description provided';
+                document.getElementById('creatorName').textContent = data.creator_name;
+                document.getElementById('createdDate').textContent = new Date(data.created_at).toLocaleDateString();
+
+                // Check if current user is creator
+                isCreator = data.created_by === currentUser.id;
+                document.getElementById('groupActions').style.display = isCreator ? 'block' : 'none';
+                document.getElementById('addMemberBtn').style.display = isCreator ? 'block' : 'none';
+
+                // Update members list
+                const membersListDiv = document.getElementById('membersList');
+                membersListDiv.innerHTML = data.members.map(member => `
+                    <div class="member-item">
+                        <div class="member-info">
+                            <div>${member.name}${member.id === currentUser.id ? ' (You)' : ''}</div>
+                            <small class="text-muted">${member.email}</small>
+                        </div>
+                        ${isCreator && member.id !== currentUser.id ? `
+                            <button class="btn btn-outline-danger btn-sm" onclick="removeMember(${member.id})">
+                                <i class="fas fa-user-minus"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                `).join('');
+
+                // Load expenses for this group
+                await loadGroupExpenses();
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to load group details: ' + error.message);
+            }
+        }
+
+        async function loadGroupExpenses() {
+            try {
+                const response = await fetch(`http://localhost:3000/api/expense-summary/${currentUser.id}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load expenses');
+                }
+
+                // Filter expenses for this group
+                const groupExpenses = data.expenses.filter(expense => expense.group_id === parseInt(groupId));
+                
+                // Update expenses list
+                const expensesListDiv = document.getElementById('expensesList');
+                if (groupExpenses.length === 0) {
+                    expensesListDiv.innerHTML = '<p class="text-muted">No expenses yet</p>';
+                } else {
+                    expensesListDiv.innerHTML = groupExpenses.map(expense => `
+                        <div class="expense-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div>${expense.description || 'Untitled Expense'}</div>
+                                    <small class="expense-date">
+                                        Paid by ${expense.paid_by_name}
+                                        on ${new Date(expense.created_at).toLocaleDateString()}
+                                    </small>
+                                </div>
+                                <div class="expense-amount">₹${expense.amount}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                // Calculate and update summary
+                const totalExpenses = groupExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+                const memberCount = document.querySelectorAll('.member-item').length;
+                const yourShare = totalExpenses / memberCount;
+                const yourExpenses = groupExpenses
+                    .filter(expense => expense.paid_by === currentUser.id)
+                    .reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+                const yourBalance = yourExpenses - yourShare;
+
+                document.getElementById('totalExpenses').textContent = `₹${totalExpenses.toFixed(2)}`;
+                document.getElementById('yourShare').textContent = `₹${yourShare.toFixed(2)}`;
+                document.getElementById('yourBalance').textContent = `₹${yourBalance.toFixed(2)}`;
+                document.getElementById('yourBalance').className = 
+                    `fw-bold ${yourBalance >= 0 ? 'text-success' : 'text-danger'}`;
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to load expenses: ' + error.message);
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+
+        function editGroup() {
+            document.getElementById('editGroupName').value = document.getElementById('groupName').textContent;
+            document.getElementById('editGroupDescription').value = document.getElementById('groupDescription').textContent;
+            editModal.show();
+        }
+
+        async function saveGroupChanges() {
+            try {
+                const name = document.getElementById('editGroupName').value.trim();
+                const description = document.getElementById('editGroupDescription').value.trim();
+
+                if (!name) {
+                    alert('Group name is required');
+                    return;
+                }
+
+                const response = await fetch(`http://localhost:3000/api/groups/${groupId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        description,
+                        userId: currentUser.id
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error);
+                }
+
+                editModal.hide();
+                loadGroupDetails();
+                alert('Group updated successfully');
+            } catch (error) {
+                alert('Failed to update group: ' + error.message);
+            }
+        }
+
+        function showAddMemberModal() {
+            document.getElementById('newMemberEmail').value = '';
+            addMemberModal.show();
+        }
+
+        async function addNewMember() {
+            try {
+                const email = document.getElementById('newMemberEmail').value.trim();
+                
+                // First search for user by email
+                const searchResponse = await fetch(`http://localhost:3000/api/users/search?q=${encodeURIComponent(email)}`);
+                const searchData = await searchResponse.json();
+                
+                if (!searchResponse.ok) {
+                    throw new Error(searchData.error);
+                }
+
+                const userId = searchData[0].id;
+
+                // Add member to group
+                const response = await fetch(`http://localhost:3000/api/groups/${groupId}/members`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId,
+                        creatorId: currentUser.id
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error);
+                }
+
+                addMemberModal.hide();
+                loadGroupDetails();
+                alert('Member added successfully');
+            } catch (error) {
+                alert('Failed to add member: ' + error.message);
+            }
+        }
+
+        async function removeMember(memberId) {
+            if (!confirm('Are you sure you want to remove this member?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/groups/${groupId}/members/${memberId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        creatorId: currentUser.id
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error);
+                }
+
+                loadGroupDetails();
+                alert('Member removed successfully');
+            } catch (error) {
+                alert('Failed to remove member: ' + error.message);
+            }
+        }
+
+        async function deleteGroup() {
+            if (!confirm('Are you sure you want to delete this group? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/groups/${groupId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: parseInt(currentUser.id)
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to delete group');
+                }
+
+                alert('Group deleted successfully');
+                window.location.href = 'expense-summary.html';
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to delete group: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html> 

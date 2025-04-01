@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Summary - SplitEase</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .empty-state {
+            padding: 2rem;
+            background-color: #f8f9fa;
+            border-radius: 1rem;
+            display: inline-block;
+        }
+        .empty-state i {
+            color: #6c757d;
+        }
+        .empty-state .btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .empty-state .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div id="mainNav"></div>
+
+    <div class="main-content">
+        <div class="container">
+            <!-- Notifications Section -->
+            <div class="notifications-section mb-4" id="notificationsSection" style="display: none;">
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <div id="notificationsList">
+                        <!-- Notifications will be added here -->
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card summary-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Balance</h5>
+                            <h3 class="card-text text-primary" id="totalBalance">₹0.00</h3>
+                            <p class="card-text text-muted">Your overall balance across all groups</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card summary-card">
+                        <div class="card-body">
+                            <h5 class="card-title">You Owe</h5>
+                            <h3 class="card-text text-danger" id="youOwe">₹0.00</h3>
+                            <p class="card-text text-muted">Total amount you need to pay</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card summary-card">
+                        <div class="card-body">
+                            <h5 class="card-title">You're Owed</h5>
+                            <h3 class="card-text text-success" id="youreOwed">₹0.00</h3>
+                            <p class="card-text text-muted">Total amount to be received</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Groups Section -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Your Groups</h5>
+                    <a href="create-group.html" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> New Group
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="groupsTable">
+                            <thead>
+                                <tr>
+                                    <th>Group Name</th>
+                                    <th>Members</th>
+                                    <th>Your Balance</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Groups will be added here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Expenses -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Expenses</h5>
+                    <a href="add-expense.html" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Add Expense
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="expense-list">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="expensesTable">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Group</th>
+                                        <th>Amount</th>
+                                        <th>Paid By</th>
+                                        <th>Your Share</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Expenses will be added here dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/index.js"></script>
+    <script src="js/navigation.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                if (!currentUser) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                document.getElementById('userName').textContent = currentUser.name;
+
+                // await fetchTotalBalance(); // Fetch total balance
+
+                // Fetch expense summary from backend
+                const response = await fetch(`http://localhost:3000/api/expense-summary/${currentUser.id}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to fetch expense summary');
+                }
+
+                // Calculate total balance
+                let totalBalance = 0;
+                data.expenses.forEach(expense => {
+                    const perPersonShare = parseFloat(expense.amount) / expense.member_count;
+                    if (expense.paid_by === currentUser.id) {
+                        // If user paid, they should get back others' shares
+                        totalBalance += parseFloat(expense.amount) - perPersonShare;
+                    } else {
+                        // If someone else paid, user owes their share
+                        totalBalance -= perPersonShare;
+                    }
+                });
+
+                // Update total balance
+                const totalBalanceElement = document.getElementById('totalBalance');
+                if (totalBalanceElement) {
+                    totalBalanceElement.textContent = formatCurrency(data.totalBalance);
+                    totalBalanceElement.classList.add(data.totalBalance >= 0 ? 'text-success' : 'text-danger');
+                }
+
+                // Update you owe and you're owed
+                const youOweElement = document.getElementById('youOwe');
+                const youreOwedElement = document.getElementById('youreOwed');
+                
+                let totalOwed = 0;
+                let totalOwing = 0;
+
+                data.expenses.forEach(expense => {
+                    const perPersonShare = parseFloat(expense.amount) / expense.member_count;
+                    if (expense.paid_by === currentUser.id) {
+                        // If you paid, you're owed everyone else's shares
+                        totalOwing += parseFloat(expense.amount) - perPersonShare;
+                    } else {
+                        // If someone else paid, you owe your share
+                        totalOwed += perPersonShare;
+                    }
+                });
+
+                if (youOweElement) {
+                    youOweElement.textContent = formatCurrency(data.totalOwed);
+                }
+                if (youreOwedElement) {
+                    youreOwedElement.textContent = formatCurrency(data.totalOwing);
+                }
+
+                // Update groups table
+                const groupsTableBody = document.querySelector('#groupsTable tbody');
+                if (groupsTableBody) {
+                    if (data.groups.length === 0) {
+                        groupsTableBody.innerHTML = `
+                            <tr>
+                                <td colspan="4" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <i class="fas fa-users fa-3x mb-3 text-muted"></i>
+                                        <h5 class="text-muted mb-3">No Groups Yet!</h5>
+                                        <p class="text-muted mb-3">Start splitting expenses by creating your first group</p>
+                                        <a href="create-group.html" class="btn btn-primary">
+                                            <i class="fas fa-plus me-2"></i>Create New Group
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        groupsTableBody.innerHTML = data.groups.map(group => `
+                            <tr>
+                                <td>${group.name}</td>
+                                <td>${group.member_count || 1} members</td>
+                                <td class="text-${group.balance >= 0 ? 'success' : 'danger'}">
+                                    ${formatCurrency(group.balance || 0)}
+                                </td>
+                                <td>
+                                    <a href="group-details.html?id=${group.id}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>View Details
+                                    </a>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+
+                // Update expenses table
+                const expensesTableBody = document.querySelector('#expensesTable tbody');
+                if (expensesTableBody) {
+                    if (data.expenses.length === 0) {
+                        expensesTableBody.innerHTML = `
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <i class="fas fa-receipt fa-3x mb-3 text-muted"></i>
+                                        <h5 class="text-muted mb-3">No Expenses Added!</h5>
+                                        <p class="text-muted mb-3">Track your shared expenses by adding your first expense</p>
+                                        <a href="add-expense.html" class="btn btn-primary">
+                                            <i class="fas fa-plus me-2"></i>Add New Expense
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        expensesTableBody.innerHTML = data.expenses.map(expense => {
+                            const perPersonShare = expense.amount / (expense.member_count || 1);
+                            const isUserPayer = expense.paid_by === currentUser.id;
+                            const shareAmount = isUserPayer ? 
+                                parseFloat(expense.amount) - perPersonShare : // If user paid, show what others owe
+                                -perPersonShare; // If user didn't pay, show what they owe
+                            
+                            return `
+                                <tr>
+                                    <td>${new Date(expense.created_at).toLocaleDateString()}</td>
+                                    <td>${expense.description}</td>
+                                    <td>${expense.group_name}</td>
+                                    <td>${formatCurrency(expense.amount)}</td>
+                                    <td>${isUserPayer ? 'You' : expense.paid_by_name}</td>
+                                    <td class="${shareAmount >= 0 ? 'text-success' : 'text-danger'}">
+                                        ${formatCurrency(Math.abs(shareAmount))}
+                                        ${shareAmount >= 0 ? ' (to receive)' : ' (to pay)'}
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to load expense summary: ' + error.message);
+            }
+        });
+
+//         async function fetchTotalBalance() {
+//     try {
+//         const response = await fetch(`http://localhost:3000/api/user/balance/${currentUser.id}`);
+//         const data = await response.json();
+//         document.getElementById('totalBalance').textContent = `₹${data.totalBalance}`;
+//     } catch (error) {
+//         console.error('Error fetching balance:', error);
+//     }
+// }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR'
+            }).format(amount);
+        }
+    </script>
+</body>
+</html> 

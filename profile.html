@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - SplitEase</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="mainNav"></div>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="card">
+                <div class="card-body p-4">
+                    <h4 class="mb-4">Profile Settings</h4>
+                    
+                    <form id="profileForm" onsubmit="handleProfileUpdate(event)">
+                        <div class="row mb-4">
+                            <div class="col-md-3 text-center">
+                                <div class="profile-photo-container mb-3">
+                                    <img id="profilePhoto" src="logo.png" 
+                                         class="rounded-circle profile-photo" alt="Profile Photo">
+                                    <div class="photo-upload-overlay">
+                                        <label for="profilePhoto" class="photo-upload-btn">
+                                            <i class="fas fa-camera"></i>
+                                        </label>
+                                        <input type="file" id="profilePhoto" accept="image/*" 
+                                               style="display: none;" onchange="handlePhotoUpload(event)">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="mb-3">
+                                    <label for="fullName" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="fullName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email address</label>
+                                    <input type="email" class="form-control" id="email" readonly>
+                                    <small class="text-muted">Email cannot be changed</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 mb-3">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <a href="expense-summary.html" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+
+                    <form id="passwordForm">
+                        <div class="password-section mb-4">
+                            <h5 class="mb-3">Change Password</h5>
+                            <div class="mb-3">
+                                <label for="currentPassword" class="form-label">Current Password</label>
+                                <input type="password" class="form-control" id="currentPassword">
+                            </div>
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">New Password</label>
+                                <input type="password" class="form-control" id="newPassword" 
+                                       minlength="6" pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$"
+                                       title="Password must be at least 6 characters long and contain both letters and numbers">
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" id="confirmNewPassword">
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <a href="expense-summary.html" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/index.js"></script>
+    <script src="js/navigation.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // const userId = localStorage.getItem('userId');
+            currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('fullName').value = currentUser.name;
+            document.getElementById('email').value = currentUser.email;
+        
+        });
+
+        async function handleProfileUpdate(event) {
+            event.preventDefault();
+            const userId = localStorage.getItem('userId');
+            const fullName = document.getElementById('fullName').value;
+            const profilePhoto = document.getElementById('profilePhoto').src;
+
+            try {
+                const response = await fetch('http://localhost:3000/profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, name: fullName, profilePhoto })
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    alert('Profile updated successfully');
+
+                    // ✅ localStorage me `currentUser` update karein
+                    const updatedUser = { ...JSON.parse(localStorage.getItem('currentUser')), name: fullName };
+                    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+
+                    // ✅ Navbar me username update karein
+                    document.getElementById('userName').textContent = fullName;
+                } else {
+                    alert(result.error);
+                }
+            } catch (error) {
+                alert('Failed to update profile');
+            }
+        }
+
+        async function handleChangePassword(event) {
+            event.preventDefault();
+            const userId = localStorage.getItem('userId');
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+            if (newPassword !== confirmNewPassword) {
+                alert('New passwords do not match');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/profile/password', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, currentPassword, newPassword })
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    alert('Password updated successfully');
+
+                     // 🔹 Instead, ek success message dikha dijiye
+                    document.getElementById('currentPassword').value = "";
+                    document.getElementById('newPassword').value = "";
+                    document.getElementById('confirmNewPassword').value = "";
+                } else {
+                    alert(result.error);
+                }
+            } catch (error) {
+                alert('Failed to update password');
+            }
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', handleProfileUpdate);
+        document.getElementById('passwordForm').addEventListener('submit', handleChangePassword);
+    </script>
+    <!-- <script>
+
+       document.addEventListener('DOMContentLoaded', async () => {
+            const userId = localStorage.getItem('userId');
+            if (!userId) {
+                window.location.href = 'login.html';
+                return;
+            }
+            await loadUserData(userId);
+
+            const currentUser = JSON.parse(localStorage.getItem('currentUser')); 
+            if (currentUser) {
+                document.getElementById('userName').textContent = currentUser.name;
+            } 
+            });
+
+
+        async function loadUserData(userId) {
+            try {
+                const response = await fetch(`http://localhost:3000/profile?userId=${userId}`);
+                const user = await response.json();
+                if (user.error) {
+                    alert(user.error);
+                } else {
+                    document.getElementById('fullName').value = user.name;
+                    document.getElementById('email').value = user.email;
+                    document.getElementById('profilePhoto').src = user.profile_photo || 'logo.png';
+
+                    // ✅ localStorage me `currentUser` ko update karein
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    document.getElementById('userName').textContent = user.name;
+                }
+            } catch (error) {
+                alert('Failed to load profile');
+            }
+        }
+
+        async function handleProfileUpdate(event) {
+            event.preventDefault();
+            const userId = localStorage.getItem('userId');
+            const fullName = document.getElementById('fullName').value;
+            const profilePhoto = document.getElementById('profilePhoto').src;
+
+            try {
+                const response = await fetch('http://localhost:3000/profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, name: fullName, profilePhoto })
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    alert('Profile updated successfully');
+
+                    // ✅ localStorage me `currentUser` update karein
+                    const updatedUser = { ...JSON.parse(localStorage.getItem('currentUser')), name: fullName };
+                    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+
+                    // ✅ Navbar me username update karein
+                    document.getElementById('userName').textContent = fullName;
+                } else {
+                    alert(result.error);
+                }
+            } catch (error) {
+                alert('Failed to update profile');
+            }
+        }
+
+        async function handleChangePassword(event) {
+            event.preventDefault();
+            const userId = localStorage.getItem('userId');
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+            if (newPassword !== confirmNewPassword) {
+                alert('New passwords do not match');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/profile/password', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, currentPassword, newPassword })
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    alert('Password updated successfully');
+
+                     // 🔹 Instead, ek success message dikha dijiye
+                    document.getElementById('currentPassword').value = "";
+                    document.getElementById('newPassword').value = "";
+                    document.getElementById('confirmNewPassword').value = "";
+                } else {
+                    alert(result.error);
+                }
+            } catch (error) {
+                alert('Failed to update password');
+            }
+        }
+
+        function handlePhotoUpload(event) {
+            event.preventDefault();
+    
+    const fileInput = document.getElementById('profilePhoto');
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append('profilePhoto', file);
+    formData.append('userId', localStorage.getItem('userId')); // User ID store karein
+
+    fetch('http://localhost:3000/profile/photo', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.path) {
+            document.getElementById('profileImage').src = data.path;
+            alert('Profile photo updated successfully!');
+        }
+    })
+    .catch(error => console.error('Error uploading profile photo:', error));
+}
+
+        document.getElementById('profileForm').addEventListener('submit', handleProfileUpdate);
+        document.getElementById('passwordForm').addEventListener('submit', handleChangePassword);
+        document.getElementById('profilePhoto').addEventListener('submit', handlePhotoUpload);
+
+    </script> -->
+</body>
+</html> 

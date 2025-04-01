@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - SplitEase</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .profile-header {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .profile-picture {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .profile-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="mainNav"></div>
+
+    <div class="main-content">
+        <div class="profile-header">
+        <div class="container">
+                <div class="row align-items-center">
+                            <div class="col-md-3 text-center">
+                        <img src="logo.png" alt="Profile Picture" class="profile-picture mb-3" id="profilePicture">
+                        <input type="file" id="profilePictureInput" accept="image/*" style="display: none;">
+                        <button class="btn btn-outline-primary btn-sm" onclick="document.getElementById('profilePictureInput').click()">
+                            <i class="fas fa-camera"></i> Change Photo
+                        </button>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h2 id="userName">Loading...</h2>
+                                <p class="text-muted" id="userEmail">Loading...</p>
+                            </div>
+                            <a href="expense-summary.html" class="btn btn-outline-primary">
+                                <i class="fas fa-chart-bar"></i> Back to Summary
+                            </a>
+                        </div>
+                        <!-- Quick Summary Stats -->
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <div class="card bg-white">
+                                    <div class="card-body p-3">
+                                        <h6 class="card-title text-muted mb-1">Total Balance</h6>
+                                        <h4 class="card-text text-primary mb-0" id="quickTotalBalance">₹0.00</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-white">
+                                    <div class="card-body p-3">
+                                        <h6 class="card-title text-muted mb-1">You Owe</h6>
+                                        <h4 class="card-text text-danger mb-0" id="quickYouOwe">₹0.00</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-white">
+                                    <div class="card-body p-3">
+                                        <h6 class="card-title text-muted mb-1">You're Owed</h6>
+                                        <h4 class="card-text text-success mb-0" id="quickYoureOwed">₹0.00</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                <!-- Profile Information -->
+                <div class="col-md-8">
+                    <div class="card profile-card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0" data-translate="Profile Information">Profile Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="profileForm" onsubmit="handleProfileUpdate(event)">
+                                <div class="mb-3">
+                                    <label for="fullName" class="form-label" data-translate="Full Name">Full Name</label>
+                                    <input type="text" class="form-control" id="fullName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label" data-translate="Phone Number">Phone Number</label>
+                                    <input type="tel" class="form-control" id="phone">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="currency" class="form-label" data-translate="Preferred Currency">Preferred Currency</label>
+                                    <select class="form-select" id="currency">
+                                        <option value="INR">Indian Rupee (₹)</option>
+                                        <option value="USD">US Dollar ($)</option>
+                                        <option value="EUR">Euro (€)</option>
+                                        <option value="GBP">British Pound (£)</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="language" class="form-label" data-translate="Language">Language</label>
+                                    <select class="form-select" id="language">
+                                        <option value="en">English</option>
+                                        <option value="hi">हिंदी (Hindi)</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="emailNotifications">
+                                        <label class="form-check-label" for="emailNotifications" data-translate="Receive email notifications">
+                                            Receive email notifications
+                                        </label>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary" data-translate="Save Changes">Save Changes</button>
+                            </form>
+                                </div>
+                            </div>
+                        </div>
+
+                <!-- Account Settings -->
+                <div class="col-md-4">
+                    <div class="card profile-card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0" data-translate="Account Settings">Account Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label d-block" data-translate="Email Notifications">Email Notifications</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                    <label class="form-check-label" for="emailNotifications" data-translate="Receive email notifications">
+                                        Receive email notifications
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <button class="btn btn-outline-primary d-block w-100 mb-2" onclick="changePassword()">
+                                    <i class="fas fa-key"></i> <span data-translate="Change Password">Change Password</span>
+                                </button>
+                                <button class="btn btn-outline-danger d-block w-100" onclick="deleteAccount()">
+                                    <i class="fas fa-trash"></i> <span data-translate="Delete Account">Delete Account</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activity Summary -->
+                    <div class="card profile-card">
+                        <div class="card-header">
+                            <h5 class="mb-0" data-translate="Activity Summary">Activity Summary</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <span data-translate="Total Groups">Total Groups</span>
+                                <span id="totalGroups">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span data-translate="Total Expenses">Total Expenses</span>
+                                <span id="totalExpenses">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span data-translate="Member Since">Member Since</span>
+                                <span id="memberSince">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" data-translate="Change Password">Change Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="changePasswordForm" onsubmit="handlePasswordChange(event)">
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label" data-translate="Current Password">Current Password</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="currentPassword" required>
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('currentPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label" data-translate="New Password">New Password</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="newPassword" required>
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('newPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            </div>
+                            <div class="mb-3">
+                            <label for="confirmPassword" class="form-label" data-translate="Confirm Password">Confirm Password</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="confirmPassword" required>
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="passwordChangeAlert" class="alert d-none">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-translate="Cancel">Cancel</button>
+                            <button type="submit" class="btn btn-primary" data-translate="Update Password">Update Password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/index.js"></script>
+    <script src="js/navigation.js"></script>
+
+    <!-- localStorage main code starts here(below) -->
+
+
+    <!-- <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is logged in
+            const currentUser = SplitEase.getCurrentUser();
+            if (!currentUser || !currentUser.email) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Initialize language
+            const currentLanguage = currentUser.language || 'en';
+            document.getElementById('language').value = currentLanguage;
+            updateUILanguage(currentLanguage);
+
+            // Load user profile data
+            loadUserProfile();
+            loadActivitySummary();
+
+            // Handle profile picture change
+            document.getElementById('profilePictureInput').addEventListener('change', handleProfilePictureChange);
+
+            const currentUserProfile = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUserProfile) {
+                document.getElementById('userName').textContent = currentUserProfile.name || 'No Name Set';
+                document.getElementById('userEmail').textContent = currentUserProfile.email || 'No Email Set';
+                // Update other summary fields as necessary
+            }
+        });
+
+        function loadUserProfile() {
+            // Fetch user profile data from the backend
+            fetch('/api/user/profile') // Adjust the endpoint as necessary
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(currentUser => {
+                    // Update profile header
+                    document.getElementById('userName').textContent = currentUser.name || 'No Name Set';
+                    document.getElementById('userEmail').textContent = currentUser.email;
+
+                    // Update form fields
+                    document.getElementById('fullName').value = currentUser.name || '';
+                    document.getElementById('phone').value = currentUser.phone || '';
+                    document.getElementById('currency').value = currentUser.currency || 'INR';
+                    document.getElementById('language').value = currentUser.language || 'en';
+                    document.getElementById('emailNotifications').checked = currentUser.emailNotifications !== false;
+
+                    // Load profile picture if exists
+                    if (currentUser.profilePicture) {
+                        document.getElementById('profilePicture').src = currentUser.profilePicture;
+                    }
+
+                    // Load quick summary balances
+                    loadQuickSummaryBalances(currentUser.email);
+                })
+                .catch(error => {
+                    console.error('Error fetching user profile:', error);
+                    // Handle error (e.g., show an alert)
+                });
+        }
+
+        function loadQuickSummaryBalances(email) {
+            // Fetch quick summary balances from the backend
+            fetch(`/api/user/balances?email=${encodeURIComponent(email)}`)
+                .then(response => response.json())
+                .then(balances => {
+                    document.getElementById('quickTotalBalance').textContent = formatRupees(balances.totalBalance);
+                    document.getElementById('quickYouOwe').textContent = formatRupees(balances.youOwe);
+                    document.getElementById('quickYoureOwed').textContent = formatRupees(balances.youreOwed);
+                })
+                .catch(error => {
+                    console.error('Error fetching balances:', error);
+                });
+        }
+
+        function loadActivitySummary() {
+            const groups = SplitEase.getGroups() || [];
+            let totalExpenses = 0;
+            
+            groups.forEach(group => {
+                const expenses = SplitEase.getExpenses(group.id) || [];
+                totalExpenses += expenses.length;
+            });
+
+            document.getElementById('totalGroups').textContent = groups.length;
+            document.getElementById('totalExpenses').textContent = totalExpenses;
+            
+            const currentUser = SplitEase.getCurrentUser();
+            const memberSince = new Date(currentUser.createdAt || Date.now()).toLocaleDateString();
+            document.getElementById('memberSince').textContent = memberSince;
+        }
+
+        function handleProfileUpdate(event) {
+            event.preventDefault();
+            
+            // Show loading state
+            const submitButton = event.target.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.innerHTML;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            submitButton.disabled = true;
+
+            const updatedProfile = {
+                name: document.getElementById('fullName').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                currency: document.getElementById('currency').value,
+                language: document.getElementById('language').value,
+                emailNotifications: document.getElementById('emailNotifications').checked
+            };
+
+            // Send updated profile data to the backend
+            fetch(`/api/user/profile?userId=${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId,
+                    name: document.getElementById('fullName').value.trim(),
+                    phone: document.getElementById('phone').value.trim(),
+                    preferred_currency: document.getElementById('currency').value,
+                    preferred_language: document.getElementById('language').value,
+                    emailNotifications: document.getElementById('emailNotifications').checked,
+                    profile_picture: document.getElementById('profilePicture').src
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Store updated profile in local storage
+                localStorage.setItem('currentUser', JSON.stringify(updatedProfile));
+                
+                // Handle success (e.g., show success message)
+                const successMessage = data.message || 'Profile updated successfully!';
+                alert(successMessage);
+                loadUserProfile(); // Reload user profile data
+            })
+            .catch(error => {
+                console.error('Error updating profile:', error);
+                // Handle error (e.g., show an alert)
+            })
+            .finally(() => {
+                // Restore button state
+                submitButton.innerHTML = originalButtonText;
+                submitButton.disabled = false;
+            });
+        }
+
+        // Add new function to update UI language
+        function updateUILanguage(language) {
+            const translations = {
+                'hi': {
+                    'Full Name': 'पूरा नाम',
+                    'Phone Number': 'फ़ोन नंबर',
+                    'Preferred Currency': 'पसंदीदा मुद्रा',
+                    'Language': 'भाषा',
+                    'Save Changes': 'परिवर्तन सहेजें',
+                    'Profile Information': 'प्रोफ़ाइल जानकारी',
+                    'Account Settings': 'खाता सेटिंग्स',
+                    'Email Notifications': 'ईमेल सूचनाएं',
+                    'Receive email notifications': 'ईमेल सूचनाएं प्राप्त करें',
+                    'Change Password': 'पासवर्ड बदलें',
+                    'Delete Account': 'खाता हटाएं',
+                    'Activity Summary': 'गतिविधि सारांश',
+                    'Total Groups': 'कुल समूह',
+                    'Total Expenses': 'कुल खर्च',
+                    'Member Since': 'सदस्य बने',
+                    'Change Photo': 'फोटो बदलें',
+                    'Back to Summary': 'सारांश पर वापस जाएं',
+                    'Current Password': 'वर्तमान पासवर्ड',
+                    'New Password': 'नया पासवर्ड',
+                    'Confirm Password': 'पासवर्ड की पुष्टि करें',
+                    'Update Password': 'पासवर्ड अपडेट करें',
+                    'Cancel': 'रद्द करें',
+                    'Password changed successfully! Please use your new password for future logins.': 'पासवर्ड सफलतापूर्वक बदल दिया गया है! कृपया भविष्य के लॉगिन के लिए अपना नया पासवर्ड उपयोग करें।',
+                    'Current password is incorrect': 'वर्तमान पासवर्ड गलत है',
+                    'New passwords do not match': 'नए पासवर्ड मेल नहीं खाते',
+                    'Password must be at least 8 characters long': 'पासवर्ड कम से कम 8 अक्षर लंबा होना चाहिए',
+                    'User not found': 'उपयोगकर्ता नहीं मिला'
+                },
+                'en': {
+                    'Full Name': 'Full Name',
+                    'Phone Number': 'Phone Number',
+                    'Preferred Currency': 'Preferred Currency',
+                    'Language': 'Language',
+                    'Save Changes': 'Save Changes',
+                    'Profile Information': 'Profile Information',
+                    'Account Settings': 'Account Settings',
+                    'Email Notifications': 'Email Notifications',
+                    'Receive email notifications': 'Receive email notifications',
+                    'Change Password': 'Change Password',
+                    'Delete Account': 'Delete Account',
+                    'Activity Summary': 'Activity Summary',
+                    'Total Groups': 'Total Groups',
+                    'Total Expenses': 'Total Expenses',
+                    'Member Since': 'Member Since',
+                    'Change Photo': 'Change Photo',
+                    'Back to Summary': 'Back to Summary',
+                    'Current Password': 'Current Password',
+                    'New Password': 'New Password',
+                    'Confirm Password': 'Confirm Password',
+                    'Update Password': 'Update Password',
+                    'Cancel': 'Cancel',
+                    'Password changed successfully! Please use your new password for future logins.': 'Password changed successfully! Please use your new password for future logins.',
+                    'Current password is incorrect': 'Current password is incorrect',
+                    'New passwords do not match': 'New passwords do not match',
+                    'Password must be at least 8 characters long': 'Password must be at least 8 characters long',
+                    'User not found': 'User not found'
+                }
+            };
+
+            const currentTranslations = translations[language] || translations['en'];
+
+            // Update all labels and text content
+            document.querySelectorAll('[data-translate]').forEach(element => {
+                const key = element.getAttribute('data-translate');
+                if (currentTranslations[key]) {
+                    if (element.tagName === 'INPUT' || element.tagName === 'BUTTON') {
+                        element.value = currentTranslations[key];
+                    } else {
+                        element.textContent = currentTranslations[key];
+                    }
+                }
+            });
+        }
+
+        function handleProfilePictureChange(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const profilePicture = e.target.result;
+                document.getElementById('profilePicture').src = profilePicture;
+                
+                try {
+                    SplitEase.updateUserProfile({ profilePicture });
+                    
+                    // Update profile photo in navigation
+                    const userPhotoElement = document.querySelector('#userDropdown img');
+                    if (userPhotoElement) {
+                        userPhotoElement.src = profilePicture;
+                    }
+
+                    // Set flag for summary page to refresh
+                    localStorage.setItem('profile_updated', 'true');
+
+                } catch (error) {
+                    console.error('Error updating profile picture:', error);
+                    alert('Failed to update profile picture');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function changePassword() {
+            // Show the modal instead of using prompts
+            const modal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+            modal.show();
+        }
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = event.currentTarget.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function handlePasswordChange(event) {
+            event.preventDefault();
+
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Validate passwords match
+            if (newPassword !== confirmPassword) {
+                alert('New passwords do not match');
+                return;
+            }
+
+            // Send password change request to the backend
+            fetch('/api/user/password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ currentPassword, newPassword })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert(data.message || 'Password updated successfully!');
+                // Close modal or reset form
+            })
+            .catch(error => {
+                console.error('Error changing password:', error);
+                alert('Failed to change password');
+            });
+        }
+
+        function deleteAccount() {
+            const currentLanguage = document.getElementById('language').value;
+            const confirmMessage = currentLanguage === 'hi' ? 
+                'क्या आप वाकई अपना अकाउंट डिलीट करना चाहते हैं? यह क्रिया वापस नहीं ली जा सकती!' : 
+                'Are you sure you want to delete your account? This action cannot be undone!';
+            
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+
+            const passwordPrompt = currentLanguage === 'hi' ? 
+                'अकाउंट डिलीट करने की पुष्टि के लिए कृपया अपना पासवर्ड दर्ज करें:' : 
+                'Please enter your password to confirm account deletion:';
+            
+            const password = prompt(passwordPrompt);
+            if (!password) return;
+
+            try {
+                // Get current user and stored users
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                const users = JSON.parse(localStorage.getItem('users')) || {};
+                const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || {};
+
+                // Verify password
+                if (!currentUser || users[currentUser.email]?.password !== password) {
+                    throw new Error(currentLanguage === 'hi' ? 'गलत पासवर्ड' : 'Incorrect password');
+                }
+
+                // Delete user data from all storage locations
+                delete users[currentUser.email];
+                delete registeredUsers[currentUser.email];
+                
+                // Update localStorage
+                localStorage.setItem('users', JSON.stringify(users));
+                localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+                localStorage.removeItem('currentUser');
+
+                // Clear any other user-related data
+                localStorage.removeItem('profile_updated');
+                localStorage.removeItem('language_changed');
+
+                const successMessage = currentLanguage === 'hi' ? 
+                    'आपका अकाउंट सफलतापूर्वक डिलीट कर दिया गया है' : 
+                    'Account deleted successfully';
+                alert(successMessage);
+                
+                // Redirect to index page
+                window.location.href = 'index.html';
+            } catch (error) {
+                const errorMessage = currentLanguage === 'hi' ? 
+                    'अकाउंट डिलीट करने में विफल: ' : 
+                    'Failed to delete account: ';
+                alert(errorMessage + error.message);
+            }
+        }
+
+
+    
+
+    </script> -->
+
+    
+    
+    <!-- 1st traial code starts here (below) -->
+
+    <!-- <script >
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Update user name in navbar
+            document.getElementById('userName').textContent = currentUser.name;
+
+            loadUserProfile();
+            loadQuickSummaryBalances();
+            loadActivitySummary();
+            
+            // Profile picture change event
+            document.getElementById('profilePictureInput').addEventListener('change', handleProfilePictureChange);
+        });
+
+        // 🔹 **1. Profile Data Fetch Karna (Backend se)**
+        function loadUserProfile() {
+            const userId = localStorage.getItem('userId'); // User ID localStorage se le rahe hain
+
+            fetch(`/api/user/profile?userId=${userId}`)
+                .then(response => response.json())
+                .then(user => {
+                    document.getElementById('userName').textContent = user.name || 'No Name';
+                    document.getElementById('userEmail').textContent = user.email;
+                    document.getElementById('fullName').value = user.name || '';
+                    document.getElementById('phone').value = user.phone || '';
+                    document.getElementById('currency').value = user.preferred_currency || 'INR';
+                    document.getElementById('language').value = user.preferred_language || 'en';
+                    document.getElementById('emailNotifications').checked = user.emailNotifications !== false;
+
+                    if (user.profile_picture) {
+                        document.getElementById('profilePicture').src = user.profile_picture;
+                    }
+
+                    // Load Quick Summary Balances
+                    loadQuickSummaryBalances(user.email);
+                })
+                .catch(error => console.error('Error loading profile:', error));
+        }
+
+        // 🎯 Load Quick Summary Balances from Backend
+        function loadQuickSummaryBalances(email) {
+            const userEmail = document.getElementById('userEmail').textContent; // User Email Profile से लें
+            if (!userEmail) return;
+
+            fetch(`/api/user/balances?email=${encodeURIComponent(userEmail)}`)
+                .then(response => response.json())
+                .then(balances => {
+                    document.getElementById('quickTotalBalance').textContent = formatRupees(balances.totalBalance);
+                    document.getElementById('quickYouOwe').textContent = formatRupees(balances.youOwe);
+                    document.getElementById('quickYoureOwed').textContent = formatRupees(balances.youreOwed);
+                })
+                .catch(error => console.error('Error fetching balances:', error));
+        }
+
+        // 🎯 Load Activity Summary
+        function loadActivitySummary() {
+            fetch(`/api/user/groups?userId=${localStorage.getItem('userId')}`)
+                .then(response => response.json())
+                .then(groups => {
+                    const groupList = document.getElementById('groupList');
+                    let totalExpenses = 0;
+                    
+                    groups.forEach(group => {
+                        const expenses = group.expenses || [];
+                        totalExpenses += group.expenses.length;
+                    });
+
+                    document.getElementById('totalGroups').textContent = groups.length;
+                    document.getElementById('totalExpenses').textContent = totalExpenses;
+
+                    const memberSince = new Date(groups[0]?.createdAt || Date.now()).toLocaleDateString();
+                    document.getElementById('memberSince').textContent = memberSince;
+                })
+                .catch(error => console.error('Error fetching activity summary:', error));
+        }
+
+        // 🎯 Helper Function to Format Currency
+        function formatRupees(amount) {
+            return `₹${parseFloat(amount).toFixed(2)}`;
+        }
+
+        // 🔹 **2. Profile Update Karna (Backend me Save Karna)**
+        document.getElementById('profileForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const userId = localStorage.getItem('userId');
+            const updatedProfile = {
+                userId,
+                name: document.getElementById('fullName').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                preferred_currency: document.getElementById('currency').value,
+                preferred_language: document.getElementById('language').value,
+                emailNotifications: document.getElementById('emailNotifications').checked,
+                profile_picture: document.getElementById('profilePicture').src
+            };
+
+            fetch('/api/user/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedProfile)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || 'Profile updated successfully!');
+                loadUserProfile();
+            })
+            .catch(error => console.error('Error updating profile:', error));
+        });
+
+        // 🔹 **3. Password Change Karna (Backend ke through)**
+        function handlePasswordChange(event) {
+            event.preventDefault();
+
+            const userId = localStorage.getItem('userId');
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (newPassword !== confirmPassword) {
+                alert('New passwords do not match!');
+                return;
+            }
+
+            fetch('/api/user/password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, currentPassword, newPassword })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || 'Password updated successfully!');
+            })
+            .catch(error => console.error('Error changing password:', error));
+        }
+
+        function deleteAccount() {
+            const userId = localStorage.getItem('userId');
+            if (!confirm('Are you sure you want to delete your account?')) return;
+
+            fetch(`/api/user/delete/${userId}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    localStorage.clear();
+                    window.location.href = 'login.html';
+                })
+                .catch(error => console.error('Error deleting account:', error));
+        }
+
+    </script> -->
+
+
+    <!-- 2nd database code starts here (below)-->
+
+
+<!-- <script>
+
+    document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is logged in
+            currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Initialize language
+            const currentLanguage = currentUser.language || 'en';
+            document.getElementById('language').value = currentLanguage;
+            updateUILanguage(currentLanguage);
+
+            // Load user profile data
+            loadUserProfile();
+            loadActivitySummary();
+
+            // ✅ Handle Profile Update
+            document.getElementById('profileForm').addEventListener('submit', handleProfileUpdate);
+
+            // Handle profile picture change
+            document.addEventListener('DOMContentLoaded', () => {
+                const profileInput = document.getElementById('profilePictureInput');
+                if (profileInput) {
+                    profileInput.addEventListener('change', handleProfilePictureChange);
+                }
+            });
+
+
+            // ✅ Handle Password Change
+            document.getElementById('changePasswordForm').addEventListener('submit', handlePasswordChange);
+
+            // ✅ Handle Account Deletion
+            document.getElementById('deleteAccountButton').addEventListener('click', deleteAccount);
+        });
+
+        function loadUserProfile() {
+
+            const userId = localStorage.getItem('userId'); 
+
+            console.log(userId);
+
+            fetch(`/api/user/profile?userId=${userId}`)
+                .then(response => {
+                    console.log("Profile API Response Status:", response.status);
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.error || 'Failed to fetch profile'); });
+                    }
+                response.json();
+                })
+                .then(user => {
+                    console.log("Fetched User Profile:", user);
+                    document.getElementById('userName').textContent = user.name || 'No Name Set';
+                    document.getElementById('userEmail').textContent = user.email;
+                    document.getElementById('fullName').value = user.name || '';
+                    if (document.getElementById('phone')) {
+                        document.getElementById('phone').value = user.phone || '';
+                    }
+                    document.getElementById('currency').value = user.preferred_currency || 'INR';
+                    document.getElementById('language').value = user.preferred_language || 'en';
+                    
+                    if (user.profile_picture) {
+                        document.getElementById('profilePicture').src = user.profile_picture;
+                    }
+                })
+                .catch(error => console.error('Error loading profile:', error));
+            }
+
+        // 🎯 **Quick Summary Balances Fetch (Backend से)**
+        function loadQuickSummaryBalances() {
+            const userEmail = document.getElementById('userEmail').textContent; // User Email Profile से लें
+            if (!userEmail) return;
+
+            fetch(`/api/user/balances?email=${encodeURIComponent(userEmail)}`)
+                .then(response => response.json())
+                .then(balances => {
+                    document.getElementById('quickTotalBalance').textContent = formatRupees(balances.totalBalance);
+                    document.getElementById('quickYouOwe').textContent = formatRupees(balances.youOwe);
+                    document.getElementById('quickYoureOwed').textContent = formatRupees(balances.youreOwed);
+                })
+                .catch(error => console.error('Error fetching balances:', error));
+        }
+
+        // 🎯 **Activity Summary Fetch (Backend से)**
+        function loadActivitySummary() {
+            fetch(`/api/user/groups?userId=${sessionStorage.getItem('userId')}`)
+                .then(response => response.json())
+                .then(groups => {
+                    let totalExpenses = 0;
+                    
+                    groups.forEach(group => {
+                        totalExpenses += group.expenses.length;
+                    });
+
+                    document.getElementById('totalGroups').textContent = groups.length;
+                    document.getElementById('totalExpenses').textContent = totalExpenses;
+
+                    const memberSince = new Date(groups[0]?.createdAt || Date.now()).toLocaleDateString();
+                    document.getElementById('memberSince').textContent = memberSince;
+                })
+                .catch(error => console.error('Error fetching activity summary:', error));
+        }
+
+        function handleProfileUpdate(event) {
+            event.preventDefault();
+            
+             const userId = sessionStorage.getItem('userId'); 
+
+
+
+
+
+            // Show loading state
+            const submitButton = event.target.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.innerHTML;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            submitButton.disabled = true;
+
+            const updatedProfile = {
+                name: document.getElementById('fullName').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                preferred_currency: document.getElementById('currency').value,
+                preferred_language: document.getElementById('language').value,
+                profile_picture: document.getElementById('profilePicture').src,
+                emailNotifications: document.getElementById('emailNotifications').checked
+            };
+
+            // Send updated profile data to the backend
+            fetch(`/api/user/profile`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedProfile)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                
+                // Handle success (e.g., show success message)
+                const successMessage = data.message || 'Profile updated successfully!';
+                alert(successMessage);
+                loadUserProfile(); // Reload user profile data
+            })
+            .catch(error => {
+                console.error('Error updating profile:', error);
+                // Handle error (e.g., show an alert)
+            })
+            .finally(() => {
+                // Restore button state
+                submitButton.innerHTML = originalButtonText;
+                submitButton.disabled = false;
+            });
+        }
+
+        // Add new function to update UI language
+        function updateUILanguage(language) {
+            const translations = {
+                'hi': {
+                    'Full Name': 'पूरा नाम',
+                    'Phone Number': 'फ़ोन नंबर',
+                    'Preferred Currency': 'पसंदीदा मुद्रा',
+                    'Language': 'भाषा',
+                    'Save Changes': 'परिवर्तन सहेजें',
+                    'Profile Information': 'प्रोफ़ाइल जानकारी',
+                    'Account Settings': 'खाता सेटिंग्स',
+                    'Email Notifications': 'ईमेल सूचनाएं',
+                    'Receive email notifications': 'ईमेल सूचनाएं प्राप्त करें',
+                    'Change Password': 'पासवर्ड बदलें',
+                    'Delete Account': 'खाता हटाएं',
+                    'Activity Summary': 'गतिविधि सारांश',
+                    'Total Groups': 'कुल समूह',
+                    'Total Expenses': 'कुल खर्च',
+                    'Member Since': 'सदस्य बने',
+                    'Change Photo': 'फोटो बदलें',
+                    'Back to Summary': 'सारांश पर वापस जाएं',
+                    'Current Password': 'वर्तमान पासवर्ड',
+                    'New Password': 'नया पासवर्ड',
+                    'Confirm Password': 'पासवर्ड की पुष्टि करें',
+                    'Update Password': 'पासवर्ड अपडेट करें',
+                    'Cancel': 'रद्द करें',
+                    'Password changed successfully! Please use your new password for future logins.': 'पासवर्ड सफलतापूर्वक बदल दिया गया है! कृपया भविष्य के लॉगिन के लिए अपना नया पासवर्ड उपयोग करें।',
+                    'Current password is incorrect': 'वर्तमान पासवर्ड गलत है',
+                    'New passwords do not match': 'नए पासवर्ड मेल नहीं खाते',
+                    'Password must be at least 8 characters long': 'पासवर्ड कम से कम 8 अक्षर लंबा होना चाहिए',
+                    'User not found': 'उपयोगकर्ता नहीं मिला'
+                },
+                'en': {
+                    'Full Name': 'Full Name',
+                    'Phone Number': 'Phone Number',
+                    'Preferred Currency': 'Preferred Currency',
+                    'Language': 'Language',
+                    'Save Changes': 'Save Changes',
+                    'Profile Information': 'Profile Information',
+                    'Account Settings': 'Account Settings',
+                    'Email Notifications': 'Email Notifications',
+                    'Receive email notifications': 'Receive email notifications',
+                    'Change Password': 'Change Password',
+                    'Delete Account': 'Delete Account',
+                    'Activity Summary': 'Activity Summary',
+                    'Total Groups': 'Total Groups',
+                    'Total Expenses': 'Total Expenses',
+                    'Member Since': 'Member Since',
+                    'Change Photo': 'Change Photo',
+                    'Back to Summary': 'Back to Summary',
+                    'Current Password': 'Current Password',
+                    'New Password': 'New Password',
+                    'Confirm Password': 'Confirm Password',
+                    'Update Password': 'Update Password',
+                    'Cancel': 'Cancel',
+                    'Password changed successfully! Please use your new password for future logins.': 'Password changed successfully! Please use your new password for future logins.',
+                    'Current password is incorrect': 'Current password is incorrect',
+                    'New passwords do not match': 'New passwords do not match',
+                    'Password must be at least 8 characters long': 'Password must be at least 8 characters long',
+                    'User not found': 'User not found'
+                }
+            };
+
+            const currentTranslations = translations[language] || translations['en'];
+
+            // Update all labels and text content
+            document.querySelectorAll('[data-translate]').forEach(element => {
+                const key = element.getAttribute('data-translate');
+                if (currentTranslations[key]) {
+                    if (element.tagName === 'INPUT' || element.tagName === 'BUTTON') {
+                        element.value = currentTranslations[key];
+                    } else {
+                        element.textContent = currentTranslations[key];
+                    }
+                }
+            });
+        }
+
+        function handleProfilePictureChange(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const profilePicture = e.target.result;
+                document.getElementById('profilePicture').src = profilePicture;
+                
+                const userId = sessionStorage.getItem('userId');
+
+                // Send the new profile picture to the backend
+                fetch('/api/user/profile-picture', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, profile_picture: profilePicture })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message || 'Profile picture updated successfully!');
+                })
+                .catch(error => {
+                    console.error('Error updating profile picture:', error);
+                    alert('Failed to update profile picture');
+                });
+                };
+                reader.readAsDataURL(file);
+                }
+
+        // 🎯 **Navigation Bar में Profile Photo Update करें**
+        function updateNavBarProfilePicture(profilePicture) {
+            const userPhotoElement = document.querySelector('#userDropdown img');
+            if (userPhotoElement) {
+                userPhotoElement.src = profilePicture;
+            }
+
+            // ✅ Flag Set करें ताकि Summary Page Refresh हो
+            localStorage.setItem('profile_updated', 'true');
+        }
+
+        // 🎯 **Profile Picture को Backend में Save करने के लिए API Call**
+        function updateProfilePicture(profilePicture) {
+             const userId = sessionStorage.getItem('userId'); 
+
+
+
+
+
+            fetch('/api/user/profile-picture', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, profile_picture: profilePicture })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert(data.message || 'Profile picture updated successfully!');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating profile picture:', error);
+                alert('Failed to update profile picture.');
+            });
+        }
+
+        function changePassword() {
+            // Show the modal instead of using prompts
+            const modal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+            modal.show();
+        }
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = event.currentTarget.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function handlePasswordChange(event) {
+            event.preventDefault();
+
+             const userId = sessionStorage.getItem('userId'); 
+
+             if (!userId) {
+                alert("User ID not found. Please login again.");
+                return;
+            }
+
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Validate passwords match
+            if (newPassword !== confirmPassword) {
+                alert('New passwords do not match');
+                return;
+            }
+
+            console.log("Sending Password Change Request for User ID:", userId);
+
+            // Send password change request to the backend
+            fetch('/api/user/password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userId, currentPassword, newPassword })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                 if (data.error) {
+                    alert(`Error: ${data.error}`);
+                } else {
+                    alert(data.message || 'Password updated successfully!');
+                    document.getElementById('changePasswordForm').reset();
+                }
+            })
+            .catch(error => {
+                console.error('Error changing password:', error);
+                alert('Failed to change password');
+            });
+        }
+
+        // function deleteAccount() {
+        //     const userId = sessionStorage.getItem('userId'); 
+        //     if (!userId) {
+        //         alert("User ID not found. Please login again.");
+        //         return;
+        //     }
+
+        //     const currentLanguage = document.getElementById('language').value;
+        //     const confirmMessage = currentLanguage === 'hi' ? 
+        //         'क्या आप वाकई अपना अकाउंट डिलीट करना चाहते हैं? यह क्रिया वापस नहीं ली जा सकती!' : 
+        //         'Are you sure you want to delete your account? This action cannot be undone!';
+            
+        //     if (!confirm(confirmMessage)) {
+        //         return;
+        //     }
+
+        //     const passwordPrompt = currentLanguage === 'hi' ? 
+        //         'अकाउंट डिलीट करने की पुष्टि के लिए कृपया अपना पासवर्ड दर्ज करें:' : 
+        //         'Please enter your password to confirm account deletion:';
+            
+        //     const password = prompt(passwordPrompt);
+        //     if (!password) return;
+
+        //     fetch(`http://localhost:3000/api/user/delete`, {
+        //         method: 'DELETE',
+        //         headers: { 'Content-Type': 'application/json' },
+        //         body: JSON.stringify({ userId, password }) // ✅ Backend को userId और password भेजें
+        //     })
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         if (data.error) {
+        //             alert(data.error);
+        //         } else {
+        //             alert(data.message || 'Account deleted successfully!');
+                    
+        //             // ✅ Clear Session Storage
+        //             sessionStorage.clear();
+
+        //             // ✅ Redirect to Homepage or Login Page
+        //             window.location.href = 'index.html';
+        //         }
+        //     })
+        //     .catch(error => {
+        //         console.error('Error deleting account:', error);
+        //         alert('Failed to delete account.');
+        //     });
+        // }
+
+        function deleteAccount() {
+            const userId = sessionStorage.getItem('userId');
+            console.log("Deleting account for User ID:", userId);
+            if (!userId) {
+                alert("User ID not found. Please login again.");
+                return;
+            }
+
+            const confirmMessage = 'Are you sure you want to delete your account? This action cannot be undone!';
+            if (!confirm(confirmMessage)) return;
+
+            const password = prompt('Please enter your password to confirm account deletion:');
+            if (!password) return;
+
+            fetch('http://localhost:3000/api/user/delete', {  
+                method: 'DELETE',  
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: userId.trim(), password: password.trim()})  
+            })
+            .then(response => {
+                console.log("Delete API Response Status:", response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log("Delete API Response:", data);
+                if (data.error) {
+                    alert(`Error: ${data.error}`);
+                } else {
+                    alert('Account deleted successfully!');
+                    sessionStorage.clear();
+                    window.location.href = 'login.html';
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting account:', error);
+                alert('Failed to delete account.');
+            });
+        }
+
+</script> -->
+</body>
+</html>

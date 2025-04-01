@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Expense - SplitEase</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #2196F3;
+            --dark-color: #333;
+            --light-color: #f4f4f4;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <div id="mainNav"></div>
+
+    <div class="container" style="margin-top: 4rem !important;">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body p-4">
+                        <h4 class="mb-4">Add New Expense</h4>
+                        
+                        <form id="expenseForm" onsubmit="handleAddExpense(event)">
+                            <div class="mb-3">
+                                <label for="groupSelect" class="form-label">Select Group</label>
+                                <select class="form-select" id="groupSelect" required>
+                                    <option value="">Choose a group...</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <input type="text" class="form-control" id="description" 
+                                       placeholder="What was this expense for?" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="amount" class="form-label">Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" class="form-control" id="amount" 
+                                           min="0" step="0.01" placeholder="0.00" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label">Split Type</label>
+                                <div class="d-flex gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="splitType" 
+                                               id="equalSplit" value="EQUAL" checked>
+                                        <label class="form-check-label" for="equalSplit">
+                                            Split Equally
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="splitType" 
+                                               id="customSplit" value="EXACT">
+                                        <label class="form-check-label" for="customSplit">
+                                            Custom Split
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="customSplitSection" class="mb-4" style="display: none;">
+                                <label class="form-label">Custom Split Amounts</label>
+                                <div id="customSplitContainer">
+                                    <!-- Custom split inputs will be added here -->
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">Add Expense</button>
+                                <a href="expense-summary.html" class="btn btn-outline-secondary">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/index.js"></script>
+    
+    <script>
+        let currentUser = null;
+        let groupMembers = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is logged in
+            currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Update user name in navbar
+            document.getElementById('userName').textContent = currentUser.name;
+
+            // Load notifications
+            loadNotifications();
+            
+            // Load groups
+            loadGroups();
+
+            // Setup split type change handler
+            setupSplitTypeHandler();
+        });
+
+        async function loadNotifications() {
+            try {
+                const response = await fetch(`http://localhost:3000/api/notifications/${currentUser.id}`);
+                if (!response.ok) {
+                    throw new Error('Failed to load notifications');
+                }
+                
+                const notifications = await response.json();
+                const notificationCount = document.getElementById('notificationCount');
+                const notificationsList = document.getElementById('notificationsList');
+                
+                // Count unread notifications
+                const unreadCount = notifications.filter(n => !n.is_read).length;
+                
+                // Update notification count badge
+                if (unreadCount > 0) {
+                    notificationCount.textContent = unreadCount;
+                    notificationCount.style.display = 'inline';
+                } else {
+                    notificationCount.style.display = 'none';
+                }
+                
+                // Update notifications list
+                if (notifications && notifications.length > 0) {
+                    notificationsList.innerHTML = notifications.map(notification => `
+                        <li>
+                            <a class="dropdown-item ${notification.is_read ? 'text-muted' : 'fw-bold'}" 
+                               href="#" 
+                               onclick="handleNotificationClick(${notification.id}, ${notification.group_id})">
+                                ${notification.message}
+                                <br>
+                                <small class="text-muted">${new Date(notification.created_at).toLocaleString()}</small>
+                            </a>
+                        </li>
+                    `).join('');
+                } else {
+                    notificationsList.innerHTML = '<li><p class="dropdown-item text-muted">No new notifications</p></li>';
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+                document.getElementById('notificationsList').innerHTML = 
+                    '<li><p class="dropdown-item text-danger">Failed to load notifications</p></li>';
+            }
+        }
+
+        async function handleNotificationClick(notificationId, groupId) {
+            try {
+                // Mark notification as read
+                const response = await fetch(`http://localhost:3000/api/notifications/${notificationId}`, {
+                    method: 'PUT'
+                });
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.error);
+                }
+
+                // Reload notifications
+                loadNotifications();
+
+                // If notification is about a group, navigate to that group
+                if (groupId) {
+                    window.location.href = `group-details.html?id=${groupId}`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadGroups() {
+            try {
+                const response = await fetch(`http://localhost:3000/api/expense-summary/${currentUser.id}`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load groups');
+                }
+
+                const groups = data.groups;
+                const groupSelect = document.getElementById('groupSelect');
+                
+                // Clear existing options except the first one
+                groupSelect.innerHTML = '<option value="">Choose a group...</option>';
+                
+                if (groups.length === 0) {
+                    const option = document.createElement('option');
+                    option.disabled = true;
+                    option.text = 'No groups found - Create a group first';
+                    groupSelect.add(option);
+                    return;
+                }
+
+                groups.forEach(group => {
+                    const option = document.createElement('option');
+                    option.value = group.id;
+                    option.text = group.name;
+                    groupSelect.add(option);
+                });
+
+                // Add change event listener
+                groupSelect.addEventListener('change', handleGroupChange);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to load groups: ' + error.message);
+            }
+        }
+
+        async function handleGroupChange() {
+            const groupId = document.getElementById('groupSelect').value;
+            if (!groupId) return;
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/groups/${groupId}`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load group details');
+                }
+
+                groupMembers = data.members;
+                const splitType = document.querySelector('input[name="splitType"]:checked').value;
+                
+                if (splitType === 'EXACT') {
+                    updateCustomSplitInputs();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to load group members: ' + error.message);
+            }
+        }
+
+        function setupSplitTypeHandler() {
+            const splitTypeInputs = document.querySelectorAll('input[name="splitType"]');
+            const customSplitSection = document.getElementById('customSplitSection');
+
+            splitTypeInputs.forEach(input => {
+                input.addEventListener('change', (e) => {
+                    customSplitSection.style.display = e.target.value === 'EXACT' ? 'block' : 'none';
+                    
+                    if (e.target.value === 'EXACT' && groupMembers.length > 0) {
+                        updateCustomSplitInputs();
+                    }
+                });
+            });
+        }
+
+        function updateCustomSplitInputs() {
+            const container = document.getElementById('customSplitContainer');
+            container.innerHTML = '';
+
+            groupMembers.forEach(member => {
+                const div = document.createElement('div');
+                div.className = 'mb-2';
+                div.innerHTML = `
+                    <label class="form-label">${member.name} (${member.email})</label>
+                    <div class="input-group">
+                        <span class="input-group-text">₹</span>
+                        <input type="number" class="form-control custom-split-amount" 
+                               data-user-id="${member.id}" min="0" step="0.01" value="0">
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+//         async function updateTotalBalance(userId) {
+//     try {
+//         // Get latest balance from the database
+//         const response = await fetch(`http://localhost:3000/api/expense-summary/${userId}`);
+//         const data = await response.json();
+
+//         let totalOwed = 0;
+//         let totalOwing = 0;
+
+//         data.groups.forEach(group => {
+//             let balance = parseFloat(group.balance);
+//             if (balance < 0) {
+//                 totalOwed += Math.abs(balance);
+//             } else {
+//                 totalOwing += Math.abs(balance);
+//             }
+//         });
+
+//         const totalBalance = totalOwing - totalOwed;
+
+//         // Send updated balance to backend
+//         await fetch('http://localhost:3000/api/user/balance', {
+//             method: 'PUT',
+//             headers: { 'Content-Type': 'application/json' },
+//             body: JSON.stringify({ userId, totalBalance })
+//         });
+
+//         console.log("✅ Balance updated successfully:", totalBalance);
+//     } catch (error) {
+//         console.error('Error updating balance:', error);
+//     }
+// }
+
+        async function handleAddExpense(event) {
+            event.preventDefault();
+            
+            try {
+                const groupId = document.getElementById('groupSelect').value;
+                const description = document.getElementById('description').value;
+                const amount = parseFloat(document.getElementById('amount').value);
+                const splitType = document.querySelector('input[name="splitType"]:checked').value;
+                
+                // Validate inputs
+                if (!groupId || !description || isNaN(amount) || amount <= 0) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+
+                // Calculate shares based on split type
+                let shares = [];
+                if (splitType === 'EQUAL') {
+                    const shareAmount = amount / groupMembers.length;
+                    shares = groupMembers.map(member => ({
+                        userId: member.id,
+                        amount: shareAmount,
+                        percentage: null
+                    }));
+                } else if (splitType === 'EXACT') {
+                    // Get custom split amounts
+                    const customSplitInputs = document.querySelectorAll('.custom-split-amount');
+                    let totalAmount = 0;
+                    
+                    customSplitInputs.forEach(input => {
+                        const memberAmount = parseFloat(input.value);
+                        if (isNaN(memberAmount) || memberAmount < 0) {
+                            throw new Error('Invalid split amount');
+                        }
+                        
+                        totalAmount += memberAmount;
+                        shares.push({
+                            userId: parseInt(input.getAttribute('data-user-id')),
+                            amount: memberAmount,
+                            percentage: null
+                        });
+                    });
+
+                    // Validate total equals expense amount
+                    if (Math.abs(totalAmount - amount) > 0.01) {
+                        alert('The sum of split amounts must equal the total expense amount');
+                        return;
+                    }
+                }
+
+                const response = await fetch('http://localhost:3000/api/expenses', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        groupId: parseInt(groupId),
+                        description,
+                        amount,
+                        paidBy: currentUser.id,
+                        splitType,
+                        shares
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to add expense');
+                }
+
+                // await updateTotalBalance(currentUser.id);
+
+                alert('Expense added successfully');
+                window.location.href = 'expense-summary.html';
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to add expense: ' + error.message);
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html> 
